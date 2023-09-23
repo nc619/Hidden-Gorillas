@@ -46,34 +46,42 @@ clinical_example = generate_clinical_example()
 
 # --------- Animated Text --------- #
 
-# Check if 'counter' exists in the session state
-if 'counter' not in st.session_state:
-    st.session_state.counter = 0
+# Check if 'scenario_complete' exists in the session state. If not, set to False
+if 'scenario_complete' not in st.session_state:
+    st.session_state.scenario_complete = False
 
-# Generate or fetch your clinical scenario.
-clinical_scenario_parts = [clinical_example]
+# Only animate the clinical scenario if it hasn't been completed
+if not st.session_state.scenario_complete:
 
-# Create a message container for the clinical scenario
-with st.chat_message("Clinical Scenario"):
-    message_placeholder = st.empty()
-    full_response = ""
+    # Check if 'counter' exists in the session state
+    if 'counter' not in st.session_state:
+        st.session_state.counter = 0
 
-    # Display clinical scenario up to the current counter with typing effect
-    for part in clinical_scenario_parts[:st.session_state.counter + 1]:
-        for chunk in part.split():
-            full_response += chunk + " "
-            time.sleep(0.075)  # Adjust the delay as required
-            # Add a blinking cursor to simulate typing
-            message_placeholder.markdown(full_response + "▌")
-        full_response += '\n'  # Add newline after each part
-    message_placeholder.markdown(full_response)
+    # Generate or fetch your clinical scenario.
+    clinical_scenario_parts = [clinical_example]
+
+    # Create a message container for the clinical scenario
+    with st.chat_message("Clinical Scenario"):
+        message_placeholder = st.empty()
+        full_response = ""
+
+        # Display clinical scenario up to the current counter with typing effect
+        for part in clinical_scenario_parts[:st.session_state.counter + 1]:
+            for chunk in part.split():
+                full_response += chunk + " "
+                time.sleep(0.065)  # Adjust the delay as required
+                # Add a blinking cursor to simulate typing
+                message_placeholder.markdown(full_response + "▌")
+            full_response += '\n'  # Add newline after each part
+        message_placeholder.markdown(full_response)
+        st.session_state.scenario_complete = True
+
+else:
+    # If scenario is already displayed, just display it without animation
+    with st.chat_message("Clinical Scenario"):
+        st.write(clinical_example)
 
 # # ========= Generate Image ========= #
-
-# # Display the generated clinical image
-# image_url = generate_image()
-# time.sleep(0.075)  # Adjust the delay as required
-# st.image(image_url, caption='Generated Clinical Image', use_column_width=True)
 
 # If 'show_image' doesn't exist in session_state, initialize with False
 if 'show_image' not in st.session_state:
@@ -86,37 +94,38 @@ if not st.session_state.show_image:
 
 # Display the image after "Continue to Image" is pressed
 if st.session_state.show_image:
-    st.markdown("<style>@keyframes fadeIn {from {opacity: 0;} to {opacity: 1;}}</style>", unsafe_allow_html=True)
-    st.image(generate_image(), caption='Generated Clinical Image', use_column_width=True)
 
+    # Display the generated clinical image
+    image_url = generate_image()
+    time.sleep(0.075)  # Adjust the delay as required
+    st.image(image_url, caption='Generated Clinical Image', use_column_width=True)
+    
     # # ========= Student Answer ========= #
 
-    # Display condition checkboxes
-    conditions = ["ConditionA", "ConditionB", "ConditionC", "ConditionD", "ConditionE"]
-    if 'selected_conditions' not in st.session_state:
-        st.session_state.selected_conditions = []
+    # Insert Free Text Box, where users type in something...
+    # and then Going to insert a conversational chatgpt function call here 
+    # which will evaluate the response
+    user_input = st.text_input("Your analysis:")
 
-    for condition in conditions:
-        if st.checkbox(condition):
-            if condition not in st.session_state.selected_conditions:
-                st.session_state.selected_conditions.append(condition)
-        else:
-            if condition in st.session_state.selected_conditions:
-                st.session_state.selected_conditions.remove(condition)
+    # If the user has input something, simulate a call to ChatGPT (or your own function)
+    if user_input:
+        # This is a mock function to simulate a response. Replace with your actual logic or API call.
+        def chat_gpt_response(user_text):
+            # Dummy logic; replace with real function call
+            if "ailment" in user_text.lower():
+                return "It seems you've identified the ailment. Good job!"
+            else:
+                return "Not quite right. Try again."
 
-    # Display selected conditions
-    st.write("Selected conditions:")
-    for condition in st.session_state.selected_conditions:
-        st.write(condition)
-
-    # Display "Submit" and "New Scenario" buttons
-    if st.button('Submit'):
-        st.write("Submitting...")  # Placeholder, replace with actual submission logic
-
-    if st.button('New Scenario'):
+        response = chat_gpt_response(user_input)
+        st.write(response)
+                
+    if st.button('New Scenario', key='newScenarioBtn'):
         # Reset states for a new scenario
         st.session_state.counter = 0
         st.session_state.show_image = False
         st.session_state.selected_conditions = []
         st.experimental_rerun()  # Rerun the app
+                
+
     
