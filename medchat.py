@@ -9,9 +9,8 @@ openai.api_key = config.OPENAI_API_KEY
 
 # location = "chest"
 # image = "x-ray"
-# primary_morbidity = "fracture"
-# severity = "mild"
-# incidental_morbidities = ["tuberculosis"]
+# primary_morbidity = "healthy"
+# incidental_morbidities = []
 
 
 def call_scenario(sex: str, age: str, location: str, image: str, primary_morbidity: str, incidental_morbidities: list):
@@ -44,7 +43,7 @@ def call_scenario(sex: str, age: str, location: str, image: str, primary_morbidi
     if primary_morbidity == "healthy":
         task_prompt = f"Provide a third person realistic scenario for a {age} year-old {sex} presenting with symptoms that require a {image} of the {location}, but the {image} is healthy."
     else:
-        task_prompt = f"Provide a third person realistic scenario for a {age} year-old {sex} presenting with {severity} {primary_morbidity} which requires a {image} of the {location}."
+        task_prompt = f"Provide a third person realistic scenario for a {age} year-old {sex} presenting with {primary_morbidity} which requires a {image} of the {location}."
 
     # Add incidental findings to the scenario prompt
     if len(incidental_morbidities) > 0:
