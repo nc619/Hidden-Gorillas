@@ -4,12 +4,13 @@ import numpy as np
 # from prompt import scen_gen
 from cg_fncs import selector_fn as sel
 from cg_fncs import prompt_gen
+import Patient
 
 def condition_gen():
     locations = ["Frontal Chest"] # PUT LOCATIONS HERE, SEPARATED BY COMMA
     L_loc = len(locations)
-
-    features = np.array(["Pneumonia","Pleural Effusion","Tuberculosis","Rib Cage Fracture","Pulmonary Nodules","Pneumothorax","Cardiomegaly"]) 
+    modality = "X-Ray"
+    features = np.array(["Healthy","Pneumonia","Pleural Effusion","Tuberculosis","Rib Cage Fracture","Pulmonary Nodules","Pneumothorax","Cardiomegaly"]) 
     severity = ["Mild","Moderate","Severe"]
     pn_severity = ["Small","Medium","Large"]
     severity_bool = True
@@ -38,12 +39,11 @@ def condition_gen():
     out_loc, out_ftrs = sel(loc,features, curr_comp, level) #function that selects
     #the features for a specific location
 
-    out_prompt = prompt_gen(out_loc, out_ftrs, severity_bool) #Generates a prompt, level here
-    #is important as it decides the max number of conditions that are given atm
+    out_prompt, pat= prompt_gen(out_loc, out_ftrs, severity_bool, modality) #Generates a prompt, level here
+    # print(pat.age + " | " + pat.gender + " | " + pat.primary + " | " + str(pat.secondary) + " | " + pat.location + " | " + pat.modality)
+    return out_prompt, pat
 
-    #print(out_prompt)
 
-    # out_images = image_gen(out_prompt)
-    # fe_prompt = scen_gen(out_prompt)
 
-    return out_prompt#, patient_obj
+# for i in range(20):
+#     condition_gen()
