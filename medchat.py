@@ -1,21 +1,22 @@
 import config
 import openai
 
+from Patient import Patient
+
 # Get the API key from the environment variable
 openai.api_key = config.OPENAI_API_KEY
 
 
-class MedChat(Patient):
+class MedChat():
     
-    def __init__(self):
-        super().__init__()
-        self.system_prompt = "You are a medical expert and examiner. You are creating scenarios to test the knowledge of medical students. Based on these scenarios the medical student will be provided with a medical image for diagnosis. A focus of this is medical training is to help students identify incidental findings in medical images."
-        
-        "First you will generate a scenario containing a primary morbidity for which the patient has presented, and an optional incidental comorbidity which will manifest in a medical imaging diagnostic test of the primary morbidity. Then you will receive user input from a medical student where they will try to diagnose the disease. If at any point during the conversation the user enters the correct disease (or a synonymous term) you will begin your response with the exact term string ```primary correct``` and/or ```incidental correct``` for correctly identifying the primary or incidental morbidities respectively."
-        "If the user does not correctly diagnose the morbidities you will first give them a hint by providing list of symptoms in the tone of clinician. The user will then provide another input with another guess."
-        "If the user still does not guess correctly you will respond describing the features that would be present in the image that are indicative of the morbidity. The user will then provide another input with another guess."
-        "If the user still does not guess you will tell the user the correct answer, beginning your response with ```primary correct``` or ```incidental correct``` for the respective morbidity you told them."
-        "Start those steps for the primary morbidities first, before focusing on the incidental morbidities if relevant. However, if at any point the user correctly guesses the incidental morbidity you may tell them they have correctly identified an incidental morbidity."
+    def __init__(self, patient: Patient):
+        self.patient = patient
+        self.system_prompt = "You are a medical expert and examiner. You are creating scenarios to test the knowledge of medical students. Based on these scenarios the medical student will be provided with a medical image for diagnosis. A focus of this is medical training is to help students identify incidental findings in medical images." +\
+        " First you will generate a scenario containing a primary morbidity for which the patient has presented, and an optional incidental comorbidity which will manifest in a medical imaging diagnostic test of the primary morbidity. Then you will receive user input from a medical student where they will try to diagnose the disease. If at any point during the conversation the user enters the correct disease (or a synonymous term) you will begin your response with the exact term string ```<primary correct>``` and/or ```<incidental correct>``` for correctly identifying the primary or incidental morbidities respectively." +\
+        " If the user does not correctly diagnose the morbidities you will first give them a hint by providing list of symptoms in the tone of clinician. The user will then provide another input with another guess."+\
+        " If the user still does not guess correctly you will respond describing what the student should look for in the image that are indicative of the morbidity, prompting the student to objectively look for these image features. You can't see the image so describe what you, an expert radiologist would look for in the image. The user will then provide another input with another guess."+\
+        " If the user still does not guess you will tell the user the correct answer, beginning your response with ```<primary correct>``` or ```<incidental correct>``` for the respective morbidity you told them."+\
+        " Start those steps for the primary morbidities first, before any incidental morbidities if relevant. However, if at any point the user correctly guesses the incidental morbidity you may tell them they have correctly identified an incidental morbidity. DO NOT make up an or talk about an incidental morbidity unless explicitly told it exists."
      
         
         self.instructions_prompt = " Your response should be clear and in the format of a clinical report, but your language should be at the level of a patient describing their symptoms, avoiding clinical jargon. Your response should not explicitly state any diagnosis, or hint to a potential diagnosis. Keep your scenarios and responses concise, with a max of 2-3 sentences. End with a statement that a clinician has ordered a medical image of the relevant body part."
@@ -29,7 +30,7 @@ class MedChat(Patient):
         self.scenario = self.call_scenario()
         self.primary_correct = False
         
-        if len(self.incidental_morbidities) > 0:
+        if len(self.patient.secondary) > 0:
             self.secondary_correct = False
         else:
             self.secondary_correct = True
@@ -38,18 +39,18 @@ class MedChat(Patient):
 
     def get_task_prompt(self):
         # Differentiate between healthy and unhealthy scenarios
-        if primary_morbidity == "Healthy":
-            task = f"Provide a third person realistic scenario for a {self.age} year-old {self.sex} presenting with symptoms that require a {self.image} of the {self.location}, but the {self.image} is healthy."
+        if self.patient.primary == "Healthy":
+            task = f"Provide a third person realistic scenario for a {self.patient.age} year-old {self.patient.gender} presenting with symptoms that require a {self.patient.modality} of the {self.patient.location}, but the {self.patient.modality} is healthy."
         else:
-            task = f"Provide a third person realistic scenario for a {self.age} year-old {self.sex} presenting with {self.primary_morbidity} which requires a {self.image} of the {self.location}."
+            task = f"Provide a third person realistic scenario for a {self.patient.age} year-old {self.patient.gender} presenting with {self.patient.primary} which requires a {self.patient.modality} of the {self.patient.location}."
         return task
     
     
     
     def get_incidental_prompt(self):
         # Add incidental findings to the scenario prompt
-        if len(incidental_morbidities) > 0:
-            incidental = f" Symptoms of {', '.join(self.incidental_morbidities)} should only be described if they would become apparent in a clinicians initial assessment of the primary morbidity."
+        if len(self.patient.secondary) > 0:
+            incidental = f" Symptoms of {', '.join(self.patient.secondary)} should only be described if they would become apparent in a clinicians initial assessment of the primary morbidity."
         else:
             incidental = ""
         return incidental
@@ -62,7 +63,7 @@ class MedChat(Patient):
             model = "gpt-4-0613",
             messages=self.messages
         )
-        messages.append({"role": "assistant", "content": completion.choices[0].message.content})
+        self.messages.append({"role": "assistant", "content": completion.choices[0].message.content})
         
         return completion.choices[0].message.content
     
@@ -100,7 +101,7 @@ class MedChat(Patient):
         )
         
         # append response to the messages list
-        self.messages.append({"role": "assistant", "content": completion})
+        self.messages.append({"role": "assistant", "content": completion.choices[0].message.content})
         
         if "```primary correct```" in completion:
             self.primary_correct == True
@@ -108,7 +109,7 @@ class MedChat(Patient):
         if "```incidental correct```" in completion:
             self.incidental_correct == True
         
-        return completion
+        return completion.choices[0].message.content
         
         
     
@@ -117,7 +118,7 @@ class MedChat(Patient):
     
     # # Pseudorder
     # self.student_response(
-    #     x1 = "The student after seeing the medical image has provided what they think is the diagnosis delimited by three ticks: ```",
+    #     x1 = "The student after seeing the medical modality has provided what they think is the diagnosis delimited by three ticks: ```",
     #     x2 = "```. If the student correctly identified the primary morbidity. Respond with: True. Otherwise provide a hint of the correct primary morbidity by describing a list of symptoms in clinically accurate language.",
     #     user_input
     # )
