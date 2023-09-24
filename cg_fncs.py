@@ -1,6 +1,16 @@
 import random
+
 from Patient import Patient as Patient
-locations = ["Frontal Chest","Top Skull"] #Location database for error checking
+
+
+class Patient():
+    def __init__(self, age, gender, primary, secondary, location, modality):
+        self.age = str(age)
+        self.gender = str(gender)
+        self.primary = str(primary)
+        self.secondary = secondary
+        self.location = str(location)
+        self.modality = str(modality)
 
 
 def selector_fn(location,ftrs, comp, level):
@@ -10,6 +20,7 @@ def selector_fn(location,ftrs, comp, level):
     #       comp:       compatibility mapper
     #       level:      level of difficulty (-> number of things to guess), ranges 1-5
 
+    locations = ["Frontal Chest","Top Skull"] #Location database for error checking
     if location not in locations: #Error checking
         raise Exception("ERROR: The location was not in the database")
     if level>3:
@@ -25,6 +36,7 @@ def selector_fn(location,ftrs, comp, level):
         if out_ftrs[1] == "Healthy":
             out_ftrs[1] = []
     return (location, out_ftrs)
+
 
 def prompt_gen(location, features, s_bool, modality):
     # if level > 1:
@@ -73,5 +85,3 @@ def prompt_gen(location, features, s_bool, modality):
     pat = Patient(age, gender, primary, secondary, location, modality)
     
     return out_prompt, pat
-
-
