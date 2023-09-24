@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-from image_gen import text2medimage
+from img_gen import text2medimage
 from condition_gen import condition_gen
 from medchat import MedChat
 
