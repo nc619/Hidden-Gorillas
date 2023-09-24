@@ -1,10 +1,8 @@
 import random
 import numpy as np
-# from diffusion import image_gen
-# from prompt import scen_gen
+
 from cg_fncs import selector_fn as sel
-from cg_fncs import prompt_gen
-import Patient
+
 
 def condition_gen():
     locations = ["Frontal Chest"] # PUT LOCATIONS HERE, SEPARATED BY COMMA
@@ -39,11 +37,8 @@ def condition_gen():
     out_loc, out_ftrs = sel(loc,features, curr_comp, level) #function that selects
     #the features for a specific location
 
-    out_prompt, pat= prompt_gen(out_loc, out_ftrs, severity_bool, modality) #Generates a prompt, level here
+    out_prompt, pat = prompt_gen(out_loc, out_ftrs, severity_bool, modality) #Generates a prompt, level here
     # print(pat.age + " | " + pat.gender + " | " + pat.primary + " | " + str(pat.secondary) + " | " + pat.location + " | " + pat.modality)
     return out_prompt, pat
 
 
-
-# for i in range(20):
-#     condition_gen()
