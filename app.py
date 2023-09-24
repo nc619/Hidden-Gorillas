@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-from image_gen import text2medimage
+from img_gen import text2medimage
 from condition_gen import condition_gen
 from medchat import MedChat
 
@@ -105,7 +105,7 @@ def main():
     if st.session_state.show_image:
 
         # Display the generated clinical image
-        image_url = generate_image()
+        image_url = generate_image(prompt)
         time.sleep(0.075)  # Adjust the delay as required
         st.image(image_url, caption='Generated Clinical Image', use_column_width=True)
 

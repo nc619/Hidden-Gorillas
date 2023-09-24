@@ -1,8 +1,5 @@
 import random
 
-from Patient import Patient as Patient
-
-
 class Patient():
     def __init__(self, age, gender, primary, secondary, location, modality):
         self.age = str(age)

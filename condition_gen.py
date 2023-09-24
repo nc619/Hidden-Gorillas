@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 from cg_fncs import selector_fn as sel
-
+from cg_fncs import prompt_gen
 
 def condition_gen():
     locations = ["Frontal Chest"] # PUT LOCATIONS HERE, SEPARATED BY COMMA
