@@ -1,7 +1,7 @@
 import config
 import openai
 
-from Patient import Patient
+from cg_fncs import Patient
 
 # Get the API key from the environment variable
 openai.api_key = config.OPENAI_API_KEY

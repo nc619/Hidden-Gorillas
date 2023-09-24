@@ -1,4 +1,0 @@
-diffusers
-transformers
-openai=0.27.4
-streamlit
